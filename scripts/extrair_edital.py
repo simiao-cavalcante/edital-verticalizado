@@ -92,6 +92,26 @@ def _tokenize_items(blob):
     return itens
 
 
+DISC_INLINE = re.compile(
+    r'((?:[A-ZÀ-Ý][A-ZÀ-Ý/\-]*)(?:[ ,]+(?:[A-ZÀ-Ý][A-ZÀ-Ý/\-]*|E|DO|DA|DE|DOS|DAS)){0,10}):\s+(?=1\b)'
+)
+
+
+def parse_cebraspe(text):
+    """Editais estilo CEBRASPE: seção OBJETOS DE AVALIAÇÃO com disciplinas em blocos
+    corridos no formato 'NOME EM CAPS: 1 Item. 1.1 Subitem. ...' (cargo único)."""
+    blob = re.sub(r'\s+', ' ', text).strip()
+    marks = list(DISC_INLINE.finditer(blob))
+    disciplinas = []
+    for i, m in enumerate(marks):
+        end = marks[i + 1].start() if i + 1 < len(marks) else len(blob)
+        nome = re.sub(r'\s+', ' ', m.group(1)).strip(" :–-")
+        itens = _tokenize_items(blob[m.end():end])
+        if itens:
+            disciplinas.append({"nome": nome, "itens": itens})
+    return disciplinas
+
+
 def parse_markdown(text):
     meta, disciplinas, cur, started = {}, [], None, False
     for raw in text.splitlines():
@@ -193,16 +213,28 @@ def extract(path):
     if suf == ".pdf":
         import fitz
         full = "\n".join(p.get_text() for p in fitz.open(str(path)))
-        up = full.upper()
-        idx = up.find("CONTEÚDO PROGRAM")
+        def _find_heading(key):
+            # cabeçalhos vêm em CAPS no edital; procurar case-sensitive evita casar
+            # com menções em minúsculas ("...os objetos de avaliação constam...")
+            i = full.find(key)
+            return i if i != -1 else full.upper().find(key)
+
+        cebraspe = False
+        idx = _find_heading("CONTEÚDO PROGRAM")
         if idx == -1:
-            idx = up.find("CONHECIMENTOS ESPEC")
+            idx = _find_heading("OBJETOS DE AVALIA")
+            cebraspe = idx != -1
+        if idx == -1:
+            idx = _find_heading("CONHECIMENTOS ESPEC")
         section = full[idx:] if idx != -1 else full
-        m = re.search(r'\bANEXO\s+II\b', section.upper())
+        corte = r'\bANEXO\s+I\b' if cebraspe else r'\bANEXO\s+II\b'
+        m = re.search(corte, section.upper())
         if m and m.start() > 200:
             section = section[:m.start()]
         sys.stderr.write("[aviso] extração de PDF é heurística — confira o resumo.\n")
         gerais, cargos = parse_estruturado(section)
+        if not gerais and not cargos:
+            gerais = parse_cebraspe(section)   # fallback: layout CEBRASPE, cargo único
         return {}, gerais, cargos
     meta, g, c = {}, *parse_estruturado(path.read_text(encoding="utf-8", errors="ignore"))
     return meta, g, c
@@ -230,6 +262,10 @@ def main():
         for i, c in enumerate(cargos, 1):
             ni = sum(len(d['itens']) for d in c['disciplinas'])
             print(f"  [{i}] {c['nome']}  —  {len(c['disciplinas'])} disc. específicas, {ni} itens")
+    elif gerais:
+        print(f"CARGO ÚNICO detectado: {len(gerais)} disciplinas, {n_g} itens")
+        for d in gerais:
+            print(f"  {len(d['itens']):4d}  {d['nome']}")
 
     # selecionar cargo
     chosen = None
