@@ -1,12 +1,35 @@
-# 📋 Edital Verticalizado — plano de estudo em 3 formatos
+<p align="center">
+  <img src="assets/banner.png" alt="Edital Verticalizado — a IA organiza, você decide" width="100%">
+</p>
+
+<h1 align="center">Edital Verticalizado — plano de estudo em 3 formatos</h1>
+
+<p align="center">
+  <a href="https://simiao-cavalcante.github.io/edital-verticalizado/"><img src="https://img.shields.io/badge/site-edital--verticalizado-3b82f6?style=flat-square" alt="Site"></a>
+  <img src="https://img.shields.io/badge/Claude-Skill-fbbf24?style=flat-square" alt="Claude Skill">
+  <img src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.9+">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-MIT-22c55e?style=flat-square" alt="MIT"></a>
+  <img src="https://img.shields.io/badge/100%25-gr%C3%A1tis-0f172a?style=flat-square" alt="Grátis">
+</p>
+
+<p align="center">
+  🌐 <b><a href="https://simiao-cavalcante.github.io/edital-verticalizado/">Página do projeto</a></b> ·
+  🖥️ <b><a href="https://simiao-cavalcante.github.io/edital-verticalizado/demo/painel-pge-al.html">Demo ao vivo</a></b> ·
+  ⬇️ <b><a href="https://github.com/simiao-cavalcante/edital-verticalizado/raw/main/verticalizar-edital-pro.skill">Baixar a skill</a></b>
+</p>
 
 Uma **skill** que transforma o edital de **qualquer concurso público** num **plano de estudo acompanhável**, em três formatos gerados de uma única extração:
 
 - 📊 **Excel** — planilha viva: status por item, incidência, **% de cobertura por disciplina** (com gráfico) e dropdowns.
-- 🖥️ **HTML** — painel interativo: marque o progresso, disciplinas recolhíveis, busca e filtro, **salvo no navegador** e com **Salvar/Carregar progresso** (backup em `.json`).
+- 🖥️ **HTML** — painel interativo: marque o progresso, disciplinas recolhíveis, busca e filtro, **salvo no navegador** e com **Salvar/Carregar progresso** (backup em `.json`). [Veja funcionando →](https://simiao-cavalcante.github.io/edital-verticalizado/demo/painel-pge-al.html)
 - 📄 **DOCX** — versão imprimível, com caixas ☐ pra marcar à mão.
 
 > **A IA organiza, você decide.** A skill nunca "chuta" o que mais cai — ela estrutura o edital fielmente e te dá o controle.
+
+<p align="center">
+  <img src="docs/assets/print-painel.png" alt="Painel interativo com o edital da PGE-AL (818 itens)" width="90%">
+  <br><sub>O painel interativo com um edital real: PGE-AL, Procurador do Estado — 11 disciplinas, 818 itens.</sub>
+</p>
 
 ---
 
@@ -75,4 +98,4 @@ Os arquivos exibem a logo em `assets/logo.png`. Para usar outra, substitua esse 
 
 ## 👤 Créditos
 
-Criado por **Simião Cavalcante**. Contribuições e sugestões são bem-vindas — abra uma *issue* ou *pull request*.
+Criado por **Simião Cavalcante** — [Instagram @prof.simiao](https://www.instagram.com/prof.simiao) · [X @simiao_c](https://x.com/simiao_c). Contribuições e sugestões são bem-vindas — abra uma *issue* ou *pull request*.

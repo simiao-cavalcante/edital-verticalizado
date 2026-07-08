@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edital Verticalizado — seu edital vira plano de estudo em minutos</title>
+<meta name="description" content="Skill gratuita de IA que transforma o edital de qualquer concurso público em um plano de estudo acompanhável, em três formatos: Excel, painel HTML e DOCX imprimível.">
+<meta property="og:title" content="Edital Verticalizado — seu edital vira plano de estudo em minutos">
+<meta property="og:description" content="A IA organiza, você decide. Ferramenta gratuita: edital em PDF vira plano de estudo em Excel, painel interativo e versão imprimível.">
+<meta property="og:image" content="https://simiao-cavalcante.github.io/edital-verticalizado/assets/banner.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#131c33; --card:#1e293b; --line:rgba(96,165,250,.22);
+    --txt:#e2e8f0; --mut:#94a3b8; --blue:#60a5fa; --blue2:#3b82f6; --amber:#fbbf24;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--txt);font-family:'Sora',sans-serif;line-height:1.6}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:600;color:var(--txt)}
+  .brand img{width:36px;height:36px}
+  .gh-btn{border:1px solid var(--line);border-radius:100px;padding:8px 18px;font-size:14px;color:var(--mut)}
+  .gh-btn:hover{color:var(--txt);border-color:var(--blue)}
+
+  header.hero{
+    background:linear-gradient(rgba(15,23,42,.55),rgba(15,23,42,.92)),url('assets/hero-bg.png') center/cover;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-inner{padding:84px 0 90px;text-align:center}
+  .hero h1{font-size:52px;font-weight:700;line-height:1.15;letter-spacing:-.5px}
+  .hero h1 em{font-style:normal;color:var(--amber)}
+  .hero p.sub{margin:22px auto 0;max-width:640px;color:var(--mut);font-size:19px}
+  .cta-row{margin-top:38px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-block;border-radius:12px;padding:15px 30px;font-weight:600;font-size:16px;transition:transform .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--blue2);color:#fff;box-shadow:0 8px 30px rgba(59,130,246,.35)}
+  .btn-ghost{border:1px solid var(--line);color:var(--txt)}
+  .hero .hint{margin-top:14px;font-size:13px;color:var(--mut)}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin:-44px auto 0;position:relative;max-width:920px}
+  .stat{background:var(--bg2);padding:22px;text-align:center}
+  .stat b{display:block;font-size:26px;color:var(--blue)}
+  .stat span{font-size:13.5px;color:var(--mut)}
+
+  section{padding:78px 0}
+  h2{font-size:32px;font-weight:700;text-align:center;margin-bottom:14px}
+  .lead{text-align:center;color:var(--mut);max-width:620px;margin:0 auto 48px}
+
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px}
+  .step .n{width:42px;height:42px;border-radius:12px;background:rgba(96,165,250,.14);color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:19px;margin-bottom:16px}
+  .step h3{font-size:18px;margin-bottom:8px}
+  .step p{font-size:14.5px;color:var(--mut)}
+
+  .fmt{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:22px}
+  .fmt-card{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .fmt-card img{width:100%;height:210px;object-fit:cover;object-position:top;border-bottom:1px solid var(--line);background:#fff}
+  .fmt-body{padding:22px 24px 26px;flex:1;display:flex;flex-direction:column}
+  .fmt-body h3{font-size:18px;margin-bottom:8px}
+  .fmt-body h3 small{color:var(--amber);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;display:block;margin-bottom:4px}
+  .fmt-body p{font-size:14.5px;color:var(--mut);flex:1}
+  .fmt-body a{margin-top:14px;font-size:14px;font-weight:600}
+
+  .principio{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .principio blockquote{font-size:30px;font-weight:600;text-align:center;line-height:1.4}
+  .principio blockquote em{font-style:normal;color:var(--amber)}
+  .principio p{text-align:center;color:var(--mut);max-width:680px;margin:20px auto 0;font-size:15.5px}
+
+  .install{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:22px}
+  .inst{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px}
+  .inst h3{font-size:17px;margin-bottom:12px;color:var(--blue)}
+  .inst p,.inst li{font-size:14.5px;color:var(--mut)}
+  .inst ol{padding-left:20px;display:grid;gap:6px}
+  code{background:rgba(2,6,23,.7);border:1px solid var(--line);border-radius:6px;padding:2px 8px;font-size:13px;color:#93c5fd;font-family:ui-monospace,Menlo,monospace}
+  pre{background:rgba(2,6,23,.7);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin-top:10px}
+  pre code{background:none;border:none;padding:0}
+
+  footer{border-top:1px solid var(--line);padding:40px 0 48px;text-align:center;color:var(--mut);font-size:14px}
+  footer .social{margin-top:10px;display:flex;gap:18px;justify-content:center}
+  @media(max-width:640px){.hero h1{font-size:34px}.principio blockquote{font-size:22px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand"><img src="https://raw.githubusercontent.com/simiao-cavalcante/edital-verticalizado/main/assets/logo.png" alt="logo" onerror="this.style.display='none'">Edital Verticalizado</div>
+    <a class="gh-btn" href="https://github.com/simiao-cavalcante/edital-verticalizado">Ver no GitHub →</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <h1>Seu edital vira <em>plano de estudo</em><br>em minutos</h1>
+    <p class="sub">Uma skill gratuita de IA que lê o PDF do edital do seu concurso e devolve um plano acompanhável em três formatos — preservando cada item, na ordem exata da banca.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/simiao-cavalcante/edital-verticalizado/raw/main/verticalizar-edital-pro.skill">⬇ Baixar a skill (grátis)</a>
+      <a class="btn btn-ghost" href="demo/painel-pge-al.html">Ver demo ao vivo</a>
+    </div>
+    <div class="hint">Arquivo .skill para Claude · código aberto (MIT) · sem cadastro</div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><b>3</b><span>formatos: Excel, painel HTML e DOCX</span></div>
+    <div class="stat"><b>818</b><span>itens extraídos do edital PGE-AL na demo</span></div>
+    <div class="stat"><b>100%</b><span>fiel à numeração e à ordem do edital</span></div>
+    <div class="stat"><b>R$ 0</b><span>gratuita e de código aberto (MIT)</span></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>Como funciona</h2>
+    <p class="lead">Sem planilha em branco, sem fim de semana perdido. Você traz o edital; a IA faz o trabalho braçal.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>Anexe o PDF do edital</h3><p>Acione a skill no Claude ("verticalizar meu edital") e anexe o edital cru, do jeito que a banca publicou. Serve FGV, CEBRASPE e outras.</p></div>
+      <div class="step"><div class="n">2</div><h3>Escolha cargo e formatos</h3><p>Em edital com vários cargos, ela detecta todos e você escolhe o seu. Depois é só dizer quais formatos quer: Excel, HTML, DOCX — ou os três.</p></div>
+      <div class="step"><div class="n">3</div><h3>Receba o plano pronto</h3><p>Cada disciplina, assunto e subitem vira uma linha acompanhável, com status, prioridade e cobertura por disciplina calculada.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>Um edital, três formatos</h2>
+    <p class="lead">Gerados de uma única extração — o conteúdo é idêntico nos três, cada um pra um momento do estudo.</p>
+    <div class="fmt">
+      <div class="fmt-card">
+        <img src="assets/print-excel.png" alt="Planilha Excel do plano de estudo">
+        <div class="fmt-body"><h3><small>Planeje</small>Excel — planilha viva</h3><p>Uma linha por item, dropdowns de status e prioridade, cores automáticas e aba de resumo com % de cobertura por disciplina, com gráfico.</p></div>
+      </div>
+      <div class="fmt-card">
+        <img src="assets/print-painel.png" alt="Painel HTML interativo">
+        <div class="fmt-body"><h3><small>Estude</small>Painel HTML interativo</h3><p>Clique no item e o progresso sobe na hora. Disciplinas recolhíveis, busca, filtro por status e backup do progresso em arquivo.</p><a href="demo/painel-pge-al.html">Testar o painel ao vivo (edital real da PGE-AL) →</a></div>
+      </div>
+      <div class="fmt-card">
+        <img src="assets/print-docx.png" alt="DOCX imprimível">
+        <div class="fmt-body"><h3><small>Imprima</small>DOCX pra marcar à caneta</h3><p>Verticalizado clássico com caixas ☐, quadro-resumo e uma disciplina por página. Pra quem gosta de papel na mesa.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="principio">
+  <div class="wrap">
+    <blockquote>"A IA organiza. <em>Você decide.</em>"</blockquote>
+    <p>A ferramenta nunca inventa o que "mais cai" na prova: a coluna Incidência nasce vazia de propósito, pra você preencher com as provas reais da sua banca. A IA estrutura o edital com fidelidade e te devolve tempo — as decisões de estudo continuam suas.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Instalação em 2 minutos</h2>
+    <p class="lead">Baixe uma vez, use em qualquer edital.</p>
+    <div class="install">
+      <div class="inst">
+        <h3>Claude (app ou web)</h3>
+        <ol>
+          <li>Baixe o arquivo <code>verticalizar-edital-pro.skill</code></li>
+          <li>No Claude, abra <b>Configurações → Skills</b> (Capacidades)</li>
+          <li>Adicione o arquivo e pronto: peça "verticalizar meu edital"</li>
+        </ol>
+      </div>
+      <div class="inst">
+        <h3>Claude Code</h3>
+        <p>Descompacte o <code>.skill</code> (é um zip) na pasta de skills:</p>
+        <pre><code>~/.claude/skills/verticalizar-edital-pro/</code></pre>
+      </div>
+      <div class="inst">
+        <h3>Pré-requisito (Python)</h3>
+        <p>Os geradores usam três bibliotecas:</p>
+        <pre><code>pip install pymupdf openpyxl python-docx</code></pre>
+        <p style="margin-top:10px">Passo a passo completo no <a href="https://github.com/simiao-cavalcante/edital-verticalizado#readme">README do projeto</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>Criado por <b>Simião Cavalcante</b> · código aberto sob licença MIT</div>
+    <div class="social">
+      <a href="https://github.com/simiao-cavalcante/edital-verticalizado">GitHub</a>
+      <a href="https://www.instagram.com/prof.simiao">Instagram @prof.simiao</a>
+      <a href="https://x.com/simiao_c">X @simiao_c</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
