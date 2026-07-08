@@ -37,6 +37,10 @@ HEADER_WORDS = {"CARGO", "GRUPO", "NIVEL", "SUPERIOR", "MEDIO", "SEM", "COM", "E
                 "DO", "DOS", "DAS", "ESPECIALIDADE", "ANALISTA", "TECNICO", "JUDICIARIO",
                 "ASSISTENCIAL", "JUDICIAL", "GESTAO", "TECNOLOGIA", "INFORMACAO", "OFICIAL"}
 SECTION_SKIP = ("ANEXO", "CONTEUDO PROGRAM")
+DASH_ONLY  = re.compile(r'^[\s–\-—]+$')
+ESPEC_WORD = re.compile(r'\bESPECIALIDADE\b')
+TITLE_SMALL = {"de", "da", "do", "dos", "das", "e", "em", "a", "o", "com", "para"}
+TITLE_ACRO  = {"TIC", "TI", "IA"}
 
 
 def _fold(s):
@@ -47,12 +51,16 @@ def _add(disc, numero, texto):
     disc["itens"].append({"numero": numero, "nivel": numero.count(".") + 1, "texto": texto.strip()})
 
 
+def _is_caps_line(s):
+    letters = [c for c in s if c.isalpha()]
+    return len(letters) >= 3 and (sum(c.isupper() for c in letters) / len(letters)) > 0.85
+
+
 def _is_caps_header(s):
     s = s.strip()
     if len(s) < 3 or len(s) > 75 or s[0].isdigit():
         return False
-    letters = [c for c in s if c.isalpha()]
-    return len(letters) >= 3 and (sum(c.isupper() for c in letters) / len(letters)) > 0.85
+    return _is_caps_line(s)
 
 
 def _is_section(s):
@@ -61,8 +69,30 @@ def _is_section(s):
 
 
 def _is_header_fragment(s):
+    # tokens em CAPS: descarta texto corrido ("do", "e", "Judiciário.") que
+    # coincide com HEADER_WORDS só depois de normalizado
     toks = re.findall(r"[A-Za-zÀ-ÿ]+", s)
-    return bool(toks) and all(_fold(t) in HEADER_WORDS for t in toks)
+    return bool(toks) and all(t.isupper() and _fold(t) in HEADER_WORDS for t in toks)
+
+
+def _is_cargo_header(s, U):
+    # cabeçalho de cargo: linha em CAPS com CARGO/ESPECIALIDADE como palavra inteira.
+    # Evita casar texto corrido ("...na especialidade", "diversas especialidades").
+    return (_is_caps_line(s) and (U.startswith("CARGO") or ESPEC_WORD.search(U))) \
+        or _is_header_fragment(s)
+
+
+def _title(n):
+    out = []
+    for i, w in enumerate(n.split()):
+        core = _fold(re.sub(r"[^\wÀ-ÿ]", "", w))
+        if core in TITLE_ACRO:
+            out.append(w.upper())
+        elif i > 0 and w.lower() in TITLE_SMALL:
+            out.append(w.lower())
+        else:
+            out.append(w.capitalize())
+    return " ".join(out)
 
 
 def _cargo_name(buf_text):
@@ -149,6 +179,9 @@ def parse_estruturado(text):
     lines = [s.strip() for s in text.splitlines() if s.strip() and not PAGE_NOISE.search(s.strip())]
     gerais, cargos = [], []
     mode, cur_list, cur_disc, buf, hdr = "pre", None, None, [], []
+    # pend: cargo recém-aberto pode ter o nome na linha seguinte ("name" = cabeçalho
+    # terminou em "ESPECIALIDADE:"; "cont" = linha do cabeçalho cheia, nome pode continuar)
+    cur_cargo, pend = None, None
 
     def flush_disc():
         nonlocal buf
@@ -164,24 +197,43 @@ def parse_estruturado(text):
             cur_list.append(cur_disc)
 
     def start_cargo(name):
-        nonlocal cur_list, cur_disc
+        nonlocal cur_list, cur_disc, cur_cargo
         flush_disc(); cur_disc = None
-        c = {"nome": name or f"Especialidade {len(cargos) + 1}", "disciplinas": []}
+        c = {"nome": name or f"Especialidade {len(cargos) + 1}", "auto": not name, "disciplinas": []}
         cargos.append(c)
+        cur_cargo = c
         cur_list = c["disciplinas"]
 
     for s in lines:
         U = _fold(s)
         if "CONHECIMENTOS GERAIS" in U:
-            flush_disc(); cur_disc = None; cur_list = gerais; mode = "gerais"; hdr = []; continue
+            flush_disc(); cur_disc = None; cur_list = gerais; cur_cargo = None
+            mode, hdr, pend = "gerais", [], None; continue
         if "CONHECIMENTOS ESPEC" in U:
-            flush_disc(); cur_disc = None; cur_list = None; mode = "espec"; hdr = []; continue
-        if mode == "espec" and ("ESPECIALIDADE" in U or U.startswith("CARGO") or _is_header_fragment(s)):
-            hdr.append(s); continue
-        if hdr and mode == "espec":
-            start_cargo(_cargo_name(" ".join(hdr))); hdr = []
+            flush_disc(); cur_disc = None; cur_list = None; cur_cargo = None
+            mode, hdr, pend = "espec", [], None; continue
+        if mode == "espec":
+            if _is_cargo_header(s, U) or (hdr and DASH_ONLY.match(s)):
+                hdr.append(s); continue
+            if hdr:
+                nome = _cargo_name(" ".join(hdr))
+                start_cargo(nome)
+                pend = "name" if not nome else ("cont" if len(hdr[-1]) >= 55 else None)
+                hdr = []
+            if pend:
+                if _is_caps_header(s) and not _is_section(s):
+                    nome = s.strip(" :–-")
+                    cur_cargo["nome"] = nome if pend == "name" else f"{cur_cargo['nome']} {nome}"
+                    cur_cargo["auto"] = False
+                    pend = None
+                    continue
+                pend = None
         if _is_caps_header(s) and not _is_section(s):
             new_disc(s.strip(" :–-")); continue
+        if cur_disc is None and cur_cargo is not None and not cur_cargo["disciplinas"]:
+            # bloco começa direto nos itens (sem cabeçalho de disciplina):
+            # disciplina implícita com o nome do cargo
+            new_disc(cur_cargo["nome"])
         if cur_disc is not None:
             buf.append(s)
     flush_disc()
@@ -191,17 +243,18 @@ def parse_estruturado(text):
         c["disciplinas"] = [d for d in c["disciplinas"] if d["itens"]]
     cargos = [c for c in cargos if c["disciplinas"]]
 
-    def _weak(n):
-        f = _fold(n or "")
+    def _weak(c):
+        f = _fold(c["nome"])
         if "SEM ESPECIALIDADE" in f:
             return False
-        return (not n) or n.startswith("Especialidade ") or "ESPECIALIDADE" in f \
-            or "GRUPO" in f or len(n) > 45 or any(ch.isdigit() for ch in n)
+        return c["auto"] or "ESPECIALIDADE" in f or "GRUPO" in f \
+            or any(ch.isdigit() for ch in c["nome"])
     for c in cargos:
-        if _weak(c["nome"]) and c["disciplinas"]:
+        if _weak(c) and c["disciplinas"]:
             c["nome"] = c["disciplinas"][0]["nome"]
         if c["nome"].isupper():
-            c["nome"] = c["nome"].title()
+            c["nome"] = _title(c["nome"])
+        c.pop("auto", None)
     return gerais, cargos
 
 
